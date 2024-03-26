@@ -1,0 +1,150 @@
+--Delete Database
+DROP SCHEMA hospmanagement;
+
+-- Creates hospital Management System Database
+CREATE SCHEMA hospmanagement;
+USE hospmanagement;
+
+--Delete Table
+DROP TABLE
+
+-- Creates Patients Table
+CREATE TABLE Patients (
+	patientID INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(25),
+	DOB DATE,
+	gender ENUM('Male', 'Female', 'Other'),
+	address VARCHAR(40),
+	phoneNumber VARCHAR(10),
+	emergContact VARCHAR(10)
+);
+
+-- Create Nurses Tables
+CREATE TABLE  Nurses (
+	nurseID INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(25),
+	assignedDeptID INT,
+	shiftDetails VARCHAR(20),
+	FOREIGN KEY (assignedDeptID) REFERENCES Departments(deptID)
+	
+);
+
+-- Create Doctors Table, CREATE THIS TABLE SECOND!!!!!!!
+CREATE TABLE Doctors (
+	doctorID INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(25),
+	specialization VARCHAR(25),
+	docContactInfo VARCHAR(10),
+	departmentID INT,
+	FOREIGN KEY (departmentID) REFERENCES Departments(deptID)
+);
+
+-- Create Appointments Table
+CREATE TABLE Appts (
+	appointmentID INT AUTO_INCREMENT PRIMARY KEY,
+	patientID INT,
+	doctorID INT,
+	apptDate DATE,
+	apptTime TIME,
+	purpose VARCHAR(30),
+	FOREIGN KEY (patientID) REFERENCES Patients(patientID),
+	FOREIGN KEY (doctorID) REFERENCES Doctors(doctorID)
+);
+
+--Create Departments Table--CREATE THIS TABLE FIRST!!!!!!!!
+CREATE TABLE Departments (
+	deptID INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(25),
+	deptHead VARCHAR(25),
+	deptContactInfo VARCHAR(10)
+);
+
+-- Create Treatments table
+CREATE TABLE Treatments (
+	treatmentID INT AUTO_INCREMENT PRIMARY KEY,
+	description TEXT,
+	cost DECIMAL(10, 2)
+);
+
+-- Creates Medications Table
+CREATE TABLE Medications (
+	medID INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(30),
+	type VARCHAR(15),
+	costPerUnit DECIMAL(10,2)
+);
+
+-- Creates Rooms Table
+CREATE TABLE Rooms (
+	roomID INT AUTO_INCREMENT PRIMARY KEY,
+	type VARCHAR(15),
+	Status ENUM('Open', 'Occupied', 'Maintenance'),
+	costPerDay DECIMAL(10,2)
+);
+
+-- Creates Staff Tables
+CREATE TABLE Staff (
+	staffID INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(25),
+	role VARCHAR(20),
+	deptID INT,
+	FOREIGN KEY (deptID) REFERENCES Departments(deptID)
+);
+
+--Create Billing Table
+CREATE TABLE Billing (
+	billID INT AUTO_INCREMENT PRIMARY KEY,
+	patientID INT,
+	invoiceDate DATE,
+	totalAmount DECIMAL(10,2),
+	details TEXT,
+	FOREIGN KEY (patientID) REFERENCES Patients(patientID)
+);
+-- Create Insurance Table
+CREATE TABLE Insurance (
+	insuranceID INT PRIMARY KEY,
+	patientID INT,
+	doctorID INT,
+	insuranceProvider VARCHAR(50),
+	policyNumber INT,
+	policyHolderName VARCHAR(50),
+	FOREIGN KEY (patientID) REFERENCES Patients(patientID),
+	FOREIGN KEY (doctorID) REFERENCES Doctors(doctorID)
+);
+-- Create Surgeries Table 
+Create TABLE Surgeries (
+	surgeryID INT PRIMARY KEY,
+	patientID INT, 
+	doctorID INT,
+	surgeryDate DATE,
+	FOREIGN KEY (patientID) REFERENCES Patients(patientID),
+	FOREIGN KEY (doctorID) REFERENCES Doctors(doctorID)
+);
+-- Create Shift Table
+CREATE TABLE Shift (
+	ShiftID INT PRIMARY KEY,
+	doctorID INT,
+	shiftDate DATE,
+	FOREIGN KEY (doctorID) REFERENCES Doctors(doctorID)
+);
+-- Create Notification Table
+CREATE TABLE Notification (
+	notificationID INT PRIMARY KEY,
+	recipientID INT,
+	senderID INT,
+	message VARCHAR(50),
+	timestamp Date,
+	FOREIGN KEY (recipientID) REFERENCES Doctors(doctorID),
+	FOREIGN KEY (senderID) REFERENCES Nurses(nurseID)
+);
+-- Create Feedback Tabble
+CREATE TABLE Feedback (
+	feedbackID INT PRIMARY KEY,
+	patientID INT,
+	doctorID INT,
+	feedbackDate DATE,
+	comments VARCHAR(50),
+	rating VARCHAR(11),
+	FOREIGN KEY (patientID) REFERENCES Patients(patientID),
+	FOREIGN KEY (doctorID) REFERENCES Doctors(doctorID)
+);

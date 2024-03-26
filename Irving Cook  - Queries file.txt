@@ -1,0 +1,196 @@
+-- Irving Query 1: This Query Displays ALL DOCTORS IN A CERTAIN DEPARTMENT, good for appointments, medical capacity, and availability, Referrals
+SELECT doctorID, name 
+FROM Doctors
+WHERE departmentID = 11;
+
+-- Irving Query 2: This Query Displays DISPLAYS ALL AVAILABLE ROOMS, Good For Room Capacicty Planning, Incase of An Emergency Spike
+SELECT roomID, type, Status 
+FROM Rooms
+WHERE Status = 'Open';
+
+-- Irving Query 3:This Query Displays COUNT OF PATIENTS, Good for emergency Exits, and capacity planning
+SELECT COUNT(*) AS totalPatients
+FROM Patients;
+
+
+-- Irving Query 4:This Query Displays the total NUMBER OF STAFF In each Department
+SELECT dep.name AS Department, COUNT(s.staffID) AS NumberOfStaff
+FROM Departments dep
+LEFT JOIN Staff s ON dep.deptID = s.deptID
+GROUP BY dep.deptID;
+
+
+-- Irving Query 5: This Query Displays The NUMBER OF APPOINTMENTS A Doctor has on Any given day.
+SELECT 
+	d.name,
+	COUNT(a.appointmentID) AS NumberOfAppts
+FROM Doctors d
+LEFT JOIN Appts a ON d.doctorID = a.doctorID AND a.apptDate = '2023-12-01'
+GROUP BY d.doctorID;
+
+
+-- Irving Query 6: This Query DISPLAYS PATIENTS ALONG WITH THEIR ASSOCIATED DOCTORS, good for reference.
+SELECT 
+  p.name AS patientName,
+  d.name AS doctorName
+FROM Patients p
+JOIN Appts a ON p.patientID = a.patientID
+JOIN Doctors d ON a.doctorID = d.doctorID;
+
+-- Irving Query 7: This Query DISPLAYS ALL DOCTORS AND THE DEPT THEEY WORK IN, good for evaluations, and referrals.
+SELECT
+   d.name As doctorName,
+   dep.name AS departmentName
+FROM Doctors d
+JOIN Departments dep ON d.departmentID = dep.deptID;
+ 
+ -- Irving Query 8: This Query DISPLAYS DEPARTMENTS THAT HAVE NO APPOINTMENTS SCHEDLUED, this is great for finding out who has possible downtime.
+ SELECT
+   name
+ FROM
+   Departments
+ WHERE deptID NOT IN (
+ 	SELECT DISTINCT departmentID 
+ 	FROM Doctors d
+ 	JOIN Appts a ON d.doctorID = a.doctorID
+ );
+ 
+ -- Irving Query 9: This Query DISPLAYS COUNT OF APPOINTMENTS A PATIENT HAS IN A SINGLE VISIT, Good for keeping track of Frequency of patients, ENTER NO WHE PROMPTED
+SELECT 
+ 	p.name,
+ 	COUNT(*) AS AppointmentCount
+FROM Patients p
+JOIN Appts a ON p.patientID = a.patientID
+GROUP BY p.patientID
+HAVING COUNT(*) = (
+	SELECT MAX(AppointmentCount)
+	FROM (
+		SELECT patientID, COUNT(*) AS AppointmentCount
+		FROM Appts
+		GROUP BY patientID) AS AppointmentCounts
+);
+
+-- Irving Query 10: This Query Displays Patients with an appointment with more than one doctor.
+SELECT p.name
+FROM Patients p
+WHERE EXISTS (
+	SELECT 1
+	FROM Appts a
+	WHERE a.patientID = p.patientID
+	GROUP BY a.patientID
+	HAVING COUNT(DISTINCT a.doctorID) > 1
+);
+
+-- Irving Query 11: This Query DISPLAYS PATIENTCE WITHOUT ANY INSURANCE, this is good for the billing department
+SELECT p.name
+FROM Patients p
+WHERE NOT EXISTS (
+	SELECT 1
+	FROM Insurance i 
+	WHERE i.patientID = p.patientID
+);
+
+-- Irving Query 12: This Query Displays DOCTORS WHO HAVE APPOINTMENTS BEFORE A GIVEN TIME, good for scheduling Appointments, Maintenance, Etc
+SELECT d.name, d.specialization
+FROM Doctors d
+WHERE NOT EXISTS (
+	SELECT 1 
+	FROM Appts a
+	WHERE a.doctorID = d.doctorID
+	AND (a.apptTime >= '12:00:00' OR a.apptTime IS NULL)
+); 
+
+-- Toro Query 1: Selects all patients and their appointments --
+SELECT Patients.name, Appts.apptDate, Appts.apptTime
+FROM Patients
+JOIN Appts ON Patients.patientID = Appts.patientID;
+
+
+-- Toro Query 2: Lists all surgeries with patient and doctor details --
+SELECT Surgeries.surgeryID, Patients.name AS patientName, Doctors.name AS doctorName, Surgeries.surgeryDate
+FROM Surgeries
+JOIN Patients ON Surgeries.patientID = Patients.patientID
+JOIN Doctors ON Surgeries.doctorID = Doctors.doctorID;
+
+-- Toro Query 3: Finds the total cost of treatments for a specific patient --
+SELECT Patients.name, SUM(Treatments.cost) AS totalTreatmentCost
+FROM Patients
+JOIN Treatments ON Patients.patientID = Treatments.patientID
+WHERE Patients.patientID = 1
+GROUP BY Patients.name;
+
+-- Toro Query 4: Gets the details of the appointments scheduled for a specific doctor -- 
+SELECT Doctors.name AS doctorName, Appts.apptDate, Appts.apptTime, Patients.name AS patientName
+FROM Appts
+JOIN Doctors ON Appts.doctorID = Doctors.doctorID
+JOIN Patients ON Appts.patientID = Patients.patientID
+WHERE Doctors.doctorID = 101215;
+
+-- Toro Query 5: Retrieves the details of the medications with cost greater than $20 --
+SELECT * FROM Medications
+WHERE costPerUnit > 20.00;
+
+-- Toro Query 6: Finds the total billing amount for each patient -- 
+ SELECT Patients.name, SUM(Billing.totalAmount) AS totalBillingAmount
+FROM Patients
+JOIN Billing ON Patients.patientID = Billing.patientID
+GROUP BY Patients.name;
+
+-- Toro Query 7: Lists all nurses and their assigned departments --
+SELECT Nurses.name, Departments.name AS departmentName
+FROM Nurses
+JOIN Departments ON Nurses.assignedDeptID = Departments.deptID;
+
+-- Toro Query 8: Retrieves all notifications sent by a specific sender --
+SELECT Notification.message, Notification.timestamp, Doctors.name AS senderName
+FROM Notification
+JOIN Doctors ON Notification.senderID = Doctors.doctorID
+WHERE Notification.senderID = 101;
+
+-- Toro Query 9: Gets the details of the latest appointment for each patient --
+SELECT Patients.name, Appts.apptDate, Appts.apptTime
+FROM Patients
+JOIN Appts ON Patients.patientID = Appts.patientID
+WHERE (Appts.apptDate, Appts.apptTime) IN (
+    SELECT apptDate, MAX(apptTime)
+    FROM Appts
+    GROUP BY apptDate
+);
+
+-- Toro Query 10: Lists all feedback along with patient and doctor names --
+SELECT Feedback.feedbackID, Patients.name AS patientName, Doctors.name AS doctorName, Feedback.feedbackDate, Feedback.comments, Feedback.rating
+FROM Feedback
+JOIN Patients ON Feedback.patientID = Patients.patientID
+JOIN Doctors ON Feedback.doctorID = Doctors.doctorID;
+
+-- Toro Query 11: Finds the patients with insurance coverage from a specific provider --
+SELECT Patients.name, Insurance.insuranceProvider
+FROM Patients
+JOIN Insurance ON Patients.patientID = Insurance.patientID
+WHERE Insurance.insuranceProvider = 'United Health Care';
+
+-- Toro Query 12: Retrieves the details of doctors with their shift schedules --
+SELECT Doctors.name, Shift.shiftDate
+FROM Doctors
+JOIN Shift ON Doctors.doctorID = Shift.doctorID;
+
+-- Toro Query 13: Lists all treatments with medication details --
+SELECT Treatments.description, Treatments.cost, Medications.name AS medicationName, Medications.type
+FROM Treatments
+JOIN Medications ON Treatments.treatmentID = Medications.medID;
+
+-- Toro Query 14: Finds the total cost of medications for each patient --
+SELECT Patients.name, SUM(Medications.costPerUnit) AS totalMedicationCost
+FROM Patients
+JOIN Insurance ON Patients.patientID = Insurance.patientID
+JOIN Medications ON Insurance.patientID = Medications.medID
+GROUP BY Patients.name;
+
+-- Toro Query 15: Retrieve all appointments with treatment details -- 
+SELECT Appts.apptDate, Appts.apptTime, Patients.name AS patientName, Treatments.description, Treatments.cost
+FROM Appts
+JOIN Treatments ON Appts.appointmentID = Treatments.treatmentID
+JOIN Patients ON Appts.patientID = Patients.patientID;
+
+ 
+ 
